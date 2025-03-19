@@ -13,6 +13,8 @@ export type TimeAreaProps = CommonProp & {
         left?: number;
         time?: number;
     }) => void;
+    comments: any;
+    handleCommentClick: (commentId: string) => void;
 };
 /** 动画时间轴组件 */
 export declare const TimeArea: FC<TimeAreaProps>;

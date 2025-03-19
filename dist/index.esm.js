@@ -1611,7 +1611,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = ".timeline-editor-cursor {\n  cursor: ew-resize;\n  position: absolute;\n  top: 32px;\n  height: calc(100% - 32px);\n  box-sizing: border-box;\n  border-left: 1px solid #5297FF;\n  border-right: 1px solid #5297FF;\n  transform: translateX(-25%) scaleX(0.5);\n}\n.timeline-editor-cursor-top {\n  position: absolute;\n  top: 0;\n  left: 50%;\n  transform: translate(-50%, 0) scaleX(2);\n  margin: auto;\n}\n.timeline-editor-cursor-area {\n  width: 16px;\n  height: 100%;\n  cursor: ew-resize;\n  position: absolute;\n  top: 0;\n  left: 50%;\n  transform: translateX(-50%);\n}\n";
+var css_248z = ".timeline-editor-cursor {\n  cursor: ew-resize;\n  position: absolute;\n  top: 32px;\n  height: calc(100% - 32px);\n  box-sizing: border-box;\n  border-left: 1px solid #6A58A5;\n  border-right: 1px solid #6A58A5;\n  transform: translateX(-25%) scaleX(0.5);\n}\n.timeline-editor-cursor-top {\n  position: absolute;\n  top: 0;\n  left: 50%;\n  transform: translate(-50%, 0) scaleX(2);\n  margin: auto;\n}\n.timeline-editor-cursor-area {\n  width: 16px;\n  height: 100%;\n  cursor: ew-resize;\n  position: absolute;\n  top: 0;\n  left: 50%;\n  transform: translateX(-50%);\n}\n";
 styleInject(css_248z);
 
 var Cursor = function Cursor(_ref) {
@@ -1709,7 +1709,7 @@ var Cursor = function Cursor(_ref) {
     fill: "none"
   }, /*#__PURE__*/React.createElement("path", {
     d: "M0 1C0 0.447715 0.447715 0 1 0H7C7.55228 0 8 0.447715 8 1V9.38197C8 9.76074 7.786 10.107 7.44721 10.2764L4.44721 11.7764C4.16569 11.9172 3.83431 11.9172 3.55279 11.7764L0.552786 10.2764C0.214002 10.107 0 9.76074 0 9.38197V1Z",
-    fill: "#5297FF"
+    fill: "#6A58A5"
   })), /*#__PURE__*/React.createElement("div", {
     className: prefix('cursor-area')
   })));
@@ -2436,7 +2436,7 @@ var EditArea = /*#__PURE__*/React.forwardRef(function (props, ref) {
 var css_248z$5 = ".timeline-editor {\n  height: 600px;\n  width: 600px;\n  min-height: 32px;\n  position: relative;\n  font-size: 12px;\n  font-family: \"PingFang SC\";\n  background-color: #191b1d;\n  display: flex;\n  flex-direction: column;\n  overflow: hidden;\n}\n";
 styleInject(css_248z$5);
 
-var css_248z$6 = ".timeline-editor-time-area {\n  position: relative;\n  height: 32px;\n  flex: 0 0 auto;\n}\n.timeline-editor-time-area .ReactVirtualized__Grid {\n  outline: none;\n}\n.timeline-editor-time-area .ReactVirtualized__Grid::-webkit-scrollbar {\n  display: none;\n}\n.timeline-editor-time-area-interact {\n  position: absolute;\n  cursor: pointer;\n  left: 0;\n  top: 0;\n}\n.timeline-editor-time-unit {\n  border-right: 1px solid rgba(255, 255, 255, 0.2);\n  position: relative;\n  box-sizing: content-box;\n  height: 4px !important;\n  bottom: 0 !important;\n  top: auto !important;\n}\n.timeline-editor-time-unit-big {\n  height: 8px !important;\n}\n.timeline-editor-time-unit-scale {\n  color: rgba(255, 255, 255, 0.6);\n  position: absolute;\n  right: 0;\n  top: 0;\n  transform: translate(50%, -100%);\n}\n";
+var css_248z$6 = ".timeline-editor-time-area {\n  position: relative;\n  height: 32px;\n  flex: 0 0 auto;\n}\n.timeline-editor-time-area .ReactVirtualized__Grid {\n  outline: none;\n}\n.timeline-editor-time-area .ReactVirtualized__Grid::-webkit-scrollbar {\n  display: none;\n}\n.timeline-editor-time-area-interact {\n  position: absolute;\n  cursor: pointer;\n  left: 0;\n  top: 0;\n  pointer-events: auto;\n}\n.timeline-editor-time-unit {\n  border-right: 1px solid rgba(255, 255, 255, 0.2);\n  position: relative;\n  box-sizing: content-box;\n  height: 4px !important;\n  bottom: 0 !important;\n  top: auto !important;\n}\n.timeline-editor-time-unit-big {\n  height: 8px !important;\n}\n.timeline-editor-time-unit-scale {\n  color: rgba(255, 255, 255, 0.6);\n  position: absolute;\n  right: 0;\n  top: 0;\n  transform: translate(50%, -100%);\n}\n";
 styleInject(css_248z$6);
 
 /** 动画时间轴组件 */
@@ -2451,10 +2451,23 @@ var TimeArea = function TimeArea(_ref) {
     startLeft = _ref.startLeft,
     scrollLeft = _ref.scrollLeft,
     onClickTimeArea = _ref.onClickTimeArea,
-    getScaleRender = _ref.getScaleRender;
+    getScaleRender = _ref.getScaleRender,
+    comments = _ref.comments,
+    handleCommentClick = _ref.handleCommentClick;
   var gridRef = useRef();
+  var commentDotsRef = useRef(new Map());
   /** 是否显示细分刻度 */
   var showUnit = scaleSplitCount > 0;
+  // Helper function to check if a point is inside a circle
+  var isPointInCircle = function isPointInCircle(x, y, circleX, circleY, radius) {
+    var dx = x - circleX;
+    var dy = y - circleY;
+    return dx * dx + dy * dy <= radius * radius;
+  };
+  // Register comment dots for later hit testing
+  var registerCommentDot = function registerCommentDot(element, commentId) {
+    commentDotsRef.current.set(commentId, element);
+  };
   /** 获取每个cell渲染内容 */
   var cellRenderer = function cellRenderer(_ref2) {
     var columnIndex = _ref2.columnIndex,
@@ -2464,17 +2477,44 @@ var TimeArea = function TimeArea(_ref) {
     var classNames = ['time-unit'];
     if (isShowScale) classNames.push('time-unit-big');
     var item = (showUnit ? columnIndex / scaleSplitCount : columnIndex) * scale;
+    var commentsInRange = comments.filter(function (comment) {
+      return Math.floor(comment.timestamp) === item;
+    });
     return /*#__PURE__*/React.createElement("div", {
       key: key,
       style: style,
       className: prefix.apply(void 0, classNames)
     }, isShowScale && /*#__PURE__*/React.createElement("div", {
       className: prefix('time-unit-scale')
-    }, getScaleRender ? getScaleRender(item) : item));
+    }, getScaleRender ? getScaleRender(item) : item), commentsInRange.map(function (comment) {
+      return /*#__PURE__*/React.createElement("div", {
+        key: comment.id,
+        className: prefix('comment-dot'),
+        "data-comment-id": comment.id,
+        ref: function ref(el) {
+          return el && registerCommentDot(el, comment.id);
+        },
+        style: {
+          position: 'absolute',
+          top: '-23px',
+          left: '50%',
+          //transform: 'translateX(-50%)',
+          width: '10px',
+          height: '10px',
+          backgroundColor: '#6A58A5',
+          borderRadius: '50%',
+          cursor: 'pointer',
+          zIndex: 1000
+          //pointerEvents: 'all',
+          //pointerEvents: 'auto'
+        }
+      });
+    }));
   };
   useEffect(function () {
     var _gridRef$current;
     (_gridRef$current = gridRef.current) === null || _gridRef$current === void 0 ? void 0 : _gridRef$current.recomputeGridSize();
+    commentDotsRef.current.clear();
   }, [scaleWidth, startLeft]);
   /** 获取列宽 */
   var getColumnWidth = function getColumnWidth(data) {
@@ -2512,6 +2552,25 @@ var TimeArea = function TimeArea(_ref) {
         height: height
       },
       onClick: function onClick(e) {
+        var clickX = e.clientX;
+        var clickY = e.clientY;
+        // Check if the click hits any comment dot
+        var hitCommentId = null;
+        commentDotsRef.current.forEach(function (dotElement, commentId) {
+          var rect = dotElement.getBoundingClientRect();
+          var centerX = rect.left + rect.width / 2;
+          var centerY = rect.top + rect.height / 2;
+          var radius = rect.width / 2;
+          if (isPointInCircle(clickX, clickY, centerX, centerY, radius)) {
+            hitCommentId = commentId;
+          }
+        });
+        if (hitCommentId) {
+          // We hit a comment dot
+          console.log("Clicked on comment ".concat(hitCommentId));
+          handleCommentClick(hitCommentId);
+          return;
+        }
         if (hideCursor) return;
         var rect = e.currentTarget.getBoundingClientRect();
         var position = e.clientX - rect.x;
@@ -2523,7 +2582,7 @@ var TimeArea = function TimeArea(_ref) {
           scaleWidth: scaleWidth
         });
         var result = onClickTimeArea && onClickTimeArea(time, e);
-        if (result === false) return; // 返回false时阻止设置时间
+        if (result === false) return; // Block cursor update if needed
         setCursor({
           time: time
         });
@@ -2549,6 +2608,8 @@ var Timeline = /*#__PURE__*/React.forwardRef(function (props, ref) {
     maxScaleCount = checkedProps.maxScaleCount,
     onChange = checkedProps.onChange,
     engine = checkedProps.engine,
+    comments = checkedProps.comments,
+    handleCommentClick = checkedProps.handleCommentClick,
     _checkedProps$autoReR = checkedProps.autoReRender,
     autoReRender = _checkedProps$autoReR === void 0 ? true : _checkedProps$autoReR,
     onScrollVertical = checkedProps.onScroll;
@@ -2708,7 +2769,8 @@ var Timeline = /*#__PURE__*/React.forwardRef(function (props, ref) {
         scrollSync.current && scrollSync.current.setState({
           scrollTop: Math.max(val, 0)
         });
-      }
+      },
+      comments: comments
     };
   });
   // 监听timeline区域宽度变化
@@ -2743,7 +2805,9 @@ var Timeline = /*#__PURE__*/React.forwardRef(function (props, ref) {
       scaleCount: scaleCount,
       setScaleCount: handleSetScaleCount,
       onScroll: _onScroll,
-      scrollLeft: scrollLeft
+      scrollLeft: scrollLeft,
+      comments: comments,
+      handleCommentClick: handleCommentClick
     })), /*#__PURE__*/React.createElement(EditArea, _objectSpread2(_objectSpread2({}, checkedProps), {}, {
       timelineWidth: width,
       ref: function ref(_ref3) {

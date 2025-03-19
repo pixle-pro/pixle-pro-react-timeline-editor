@@ -27,6 +27,8 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
     maxScaleCount,
     onChange,
     engine,
+    comments,
+    handleCommentClick,
     autoReRender = true,
     onScroll: onScrollVertical,
   } = checkedProps;
@@ -151,6 +153,7 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
     setScrollTop: (val) => {
       scrollSync.current && scrollSync.current.setState({ scrollTop: Math.max(val, 0) });
     },
+    comments: comments
   }));
 
   // 监听timeline区域宽度变化
@@ -183,6 +186,8 @@ export const Timeline = React.forwardRef<TimelineState, TimelineEditor>((props, 
               setScaleCount={handleSetScaleCount}
               onScroll={onScroll}
               scrollLeft={scrollLeft}
+              comments={comments}
+              handleCommentClick = {handleCommentClick}
             />
             <EditArea
               {...checkedProps}

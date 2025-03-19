@@ -213,6 +213,8 @@ export interface EditData {
      * @description 点击时间区域事件, 返回false时阻止设置时间
      */
     onClickTimeArea?: (time: number, e: React.MouseEvent<HTMLDivElement, MouseEvent>) => boolean | undefined;
+    comments: any;
+    handleCommentClick: (commentId: string) => void;
 }
 export interface TimelineState {
     /** dom节点 */
